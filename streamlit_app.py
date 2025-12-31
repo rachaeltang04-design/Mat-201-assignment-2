@@ -11,7 +11,7 @@ This application visualizes **Topic 4: Gradient and Direction of Steepest Ascent
 It calculates the gradient vector $\\nabla f(x,y) = \\langle f_x, f_y \\rangle$ to show the direction of maximum increase[cite: 8].
 """)
 
-# --- SIDEBAR INPUTS (LARGER RANGES) ---
+# --- SIDEBAR INPUTS ---
 st.sidebar.header("1. Select Complexity")
 func_option = st.sidebar.radio(
     "Choose Function Type:",
@@ -19,7 +19,7 @@ func_option = st.sidebar.radio(
 )
 
 st.sidebar.header("2. Select Point $(x_0, y_0)$")
-# Increased range from 2.0 to 5.0
+# sliders set to larger range of 5.0
 x0 = st.sidebar.slider("x coordinate", -5.0, 5.0, 1.0, step=0.1)
 y0 = st.sidebar.slider("y coordinate", -5.0, 5.0, 1.0, step=0.1)
 
@@ -41,46 +41,40 @@ grad_x = df_dx(x0, y0)
 grad_y = df_dy(x0, y0)
 magnitude = np.sqrt(grad_x**2 + grad_y**2)
 
-# --- VISUALIZATION (EXPANDED GRID) ---
-# Increased range from 3 to 6 so the surface is larger
+# --- VISUALIZATION MESH ---
 x_range = np.linspace(-6, 6, 80)
 y_range = np.linspace(-6, 6, 80)
 X, Y = np.meshgrid(x_range, y_range)
 Z = f(X, Y)
 
 fig = go.Figure()
-fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Viridis', opacity=0.8, name='Surface'))
+fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Viridis', opacity=0.8))
 
 # Add the specific point (Red Dot)
-fig.add_trace(go.Scatter3d(
-    x=[x0], y=[y0], z=[z0],
-    mode='markers',
-    marker=dict(size=6, color='red'),
-    name='Point P'
-))
+fig.add_trace(go.Scatter3d(x=[x0], y=[y0], z=[z0], mode='markers', marker=dict(size=6, color='red')))
 
 # Add Gradient Vector (Cone)
 fig.add_trace(go.Cone(
     x=[x0], y=[y0], z=[z0],
     u=[grad_x], v=[grad_y], w=[magnitude * 0.5], 
-    sizemode="absolute",
-    sizeref=1.0,
-    anchor="tail",
-    colorscale=[[0, 'red'], [1, 'red']],
-    showscale=False,
-    name='Gradient Vector'
+    sizemode="absolute", sizeref=1.0, anchor="tail",
+    colorscale=[[0, 'red'], [1, 'red']], showscale=False
 ))
-
-fig.update_layout(
-    scene=dict(xaxis_title='X', yaxis_title='Y', zaxis_title='Z'),
-    margin=dict(l=0, r=0, b=0, t=40)
-)
 
 # --- DISPLAY OUTPUTS ---
 col1, col2 = st.columns([1, 2])
 with col1:
     st.info("Mathematical Details")
+    st.latex(r"\text{Function: } " + equation_latex)
+    st.latex(r"\text{Point: } P(" + str(x0) + ", " + str(y0) + ")")
+    st.write("---")
+    st.write("**Partial Derivatives:**")
+    st.latex(r"f_x = " + f"{grad_x:.3f}")
+    st.latex(r"f_y = " + f"{grad_y:.3f}")
+    st.write("---")
+    st.write("**Gradient Vector:**")
     st.latex(r"\nabla f = \langle " + f"{grad_x:.3f}, {grad_y:.3f}" + r" \rangle")
     st.success(f"Steepest Ascent Direction: <{grad_x:.2f}, {grad_y:.2f}>")
+
 with col2:
     st.plotly_chart(fig, use_container_width=True)
